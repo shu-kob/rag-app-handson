@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-import vertexai
-from vertexai.generative_models import GenerativeModel
+from langchain_google_vertexai import VertexAI
+from langchain_core.prompts import PromptTemplate
 
 app = FastAPI()
 
 @app.get('/')
 def index():
-  return {'data': {'name': 'Test'}}
+  return 'hello'
 
 class User(BaseModel):
     name: str
@@ -22,16 +22,17 @@ class Question(BaseModel):
 
 @app.post('/api/llm')
 def llm_service(question: Question):
-    prompt = question.query
+    human_question = question.query
+    model = VertexAI(model_name="gemini-2.0-flash-001", location="us-west1")
+    template = """質問: {question}
 
-    vertexai.init(location="us-west1") # vertexaiの初期化で、ロケーションを設定
+    ステップバイステップで考えてください。"""
 
-    model = GenerativeModel("gemini-2.0-flash-001") # モデルを設定
+    prompt_template = PromptTemplate.from_template(template)
 
-    response = model.generate_content( # プロンプトをモデルに入れて出力(レスポンスを得る)
-        prompt
-    )
+    chain = prompt_template | model # prompt_templateをmodelに引き渡す処理を"|"を用いて簡単に実現
 
-    print(response.text) # コンソールログにresponseのテキストを表示
-    resp = { 'response': response.text } # responseを形作る
+    response = chain.invoke({"question": human_question}) # invokeは全ての処理が終わってから値を返す。他にはstreamなど
+    print(response)
+    resp = { 'answer': response }
     return resp

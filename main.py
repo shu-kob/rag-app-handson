@@ -7,7 +7,7 @@ app = FastAPI()
 
 @app.get('/')
 def index():
-  return {'data': {'name': 'Test'}}
+  return 'hello'
 
 class User(BaseModel):
     name: str

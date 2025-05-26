@@ -7,12 +7,23 @@ from google.cloud import discoveryengine_v1 as discoveryengine
 import google.auth
 import os
 from dotenv import load_dotenv
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()  # Load environment variables from .env file
 
 credentials, project_id = google.auth.default()
 
 app = FastAPI()
+
+# CORSミドルウェアの設定
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # すべてのオリジンを許可
+    allow_credentials=True,
+    allow_methods=["*"],  # すべてのメソッドを許可
+    allow_headers=["*"],  # すべてのヘッダーを許可
+    expose_headers=["*"]  # すべてのヘッダーを公開
+)
 
 @app.get('/')
 def index():

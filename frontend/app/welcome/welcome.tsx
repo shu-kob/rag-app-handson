@@ -1,7 +1,18 @@
-import logoDark from "./logo-dark.svg";
-import logoLight from "./logo-light.svg";
+import { useState } from "react";
 
 export function Welcome() {
+  const [input, setInput] = useState("");
+
+  const onSend = () => {
+    fetch("http://localhost:8000/api/llm", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ query: input }),
+    })
+  }
+
   return (
     <main className="flex items-center justify-center pt-16 pb-4">
       <div className="flex-1 flex flex-col items-center gap-16 min-h-0">
@@ -20,6 +31,8 @@ export function Welcome() {
                 outline: "none",
                 boxShadow: "none",
               }}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
             />
           </div>
           <div>
@@ -29,6 +42,7 @@ export function Welcome() {
                 border: "1px solid #ccc",
                 padding: "0.5rem 1rem",
               }}
+              onClick={onSend}
             >
               送信
             </button>

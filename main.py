@@ -4,8 +4,11 @@ from langchain_google_vertexai import VertexAI
 from langchain_core.prompts import PromptTemplate
 from google.api_core.client_options import ClientOptions
 from google.cloud import discoveryengine_v1 as discoveryengine
-import os
 import google.auth
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # Load environment variables from .env file
 
 credentials, project_id = google.auth.default()
 
@@ -30,15 +33,20 @@ class Question(BaseModel):
 def llm_service(question: Question):
     human_question = question.query
     model = VertexAI(model_name="gemini-2.0-flash-001", location="us-west1")
+    context_resp = retriever_service(question)
+    context = context_resp['search_result']
+    print(context)
     template = """質問: {question}
 
-    ステップバイステップで考えてください。"""
+    以下の情報を参考にして、質問に答えてください。
+    {context}
+    """
 
     prompt_template = PromptTemplate.from_template(template)
 
     chain = prompt_template | model # prompt_templateをmodelに引き渡す処理を"|"を用いて簡単に実現
 
-    response = chain.invoke({"question": human_question}) # invokeは全ての処理が終わってから値を返す。他にはstreamなど
+    response = chain.invoke({"question": human_question, "context": context}) # invokeは全ての処理が終わってから値を返す。他にはstreamなど
     print(response)
     resp = { 'answer': response }
     return resp
@@ -48,7 +56,7 @@ def retriever_service(question: Question):
     search_query = question.query
     project_id
     location: str = "global"
-    engine_id: str = 'DISCOVERY_ENGINE_ID'
+    engine_id: str = os.environ['DISCOVERY_ENGINE_ID']
     def search(
         project_id: str,
         location: str,

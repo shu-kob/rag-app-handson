@@ -49,7 +49,7 @@ curl -s http://localhost:8000/
 ## ライブラリのインストール
 
 ```
-pip install -r requirements txt
+pip install -r requirements.txt
 ```
 
 ## 実行方法
